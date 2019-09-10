@@ -1,18 +1,18 @@
 package clock;
 
-public class TimeCounter {
+public class Time {
     private int currentTime;
-    private ClockOutput output;
+    private ClockOutput out;
 
-    public TimeCounter(int startTime, ClockOutput out){
+    public Time(int startTime, ClockOutput out){
         currentTime = startTime;
-        output = out;
+        this.out = out;
     }
 
     public void tick() {
         while (true) {
             currentTime += 1;
-            output.displayTime(currentTime);
+            out.displayTime(currentTime);
             try {
                 Thread.sleep(1000);
             } catch (InterruptedException e) {
