@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/cs_edap10/cs_edap10.iml" filepath="$PROJECT_DIR$/cs_edap10/cs_edap10.iml" />
+      <module fileurl="file://$PROJECT_DIR$/lab1-alarmclock/lab1-alarmclock.iml" filepath="$PROJECT_DIR$/lab1-alarmclock/lab1-alarmclock.iml" />
+      <module fileurl="file://$PROJECT_DIR$/lab2-factory/lab2-factory.iml" filepath="$PROJECT_DIR$/lab2-factory/lab2-factory.iml" />
+      <module fileurl="file://$PROJECT_DIR$/lab3-lift/lab3-lift.iml" filepath="$PROJECT_DIR$/lab3-lift/lab3-lift.iml" />
+      <module fileurl="file://$PROJECT_DIR$/lab4-primefac/lab4-primefac.iml" filepath="$PROJECT_DIR$/lab4-primefac/lab4-primefac.iml" />
+      <module fileurl="file://$PROJECT_DIR$/lab5-washing/lab5-washing.iml" filepath="$PROJECT_DIR$/lab5-washing/lab5-washing.iml" />
+      <module fileurl="file://$PROJECT_DIR$/lab6-chat/lab6-chat.iml" filepath="$PROJECT_DIR$/lab6-chat/lab6-chat.iml" />
+    </modules>
+  </component>
+</project>
