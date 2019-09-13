@@ -15,16 +15,18 @@ public class ClockMain {
         ClockOutput out = emulator.getOutput();
         Semaphore sem = in.getSemaphore();
 
-        Semaphore alarmSemaphore = new Semaphore(0);
         Semaphore timeMutex = new Semaphore(1);
 
         Clock clock = new Clock(0, out, timeMutex);
+        Thread clockThread = new Thread(() -> {
+            try {
+                clock.tick();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }, "clock");
 
-        Thread clockThread = new Thread( () -> clock.tick(alarmSemaphore), "clock");
-        Thread alarmThread = new Thread( () -> clock.soundTheAlarm(alarmSemaphore), "alarm");
-
-        clockThread.start();  //startar tråden som tickar klockan och kör displayTime.
-        alarmThread.start();  //startar tråden som kollar larmet.
+        clockThread.start();
 
         while (true) {
             sem.acquire();  // wait for user input
@@ -44,7 +46,7 @@ public class ClockMain {
                     clock.toggleAlarm();
                     break;
                 case 4:
-                    alarmSemaphore.drainPermits();
+                    clock.stopAlarm();
                     break;
             }
 
