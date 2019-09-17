@@ -40,12 +40,14 @@ public class ToolController {
         // TODO: you will need to modify this method
         //
         if (widgetKind == WidgetKind.ORANGE_ROUND_WIDGET) {
-        	// TODO
+        	conveyor.off();
+        	paint.on();
+        	Thread.sleep(paintingMillis);
+        	paint.off();
+        	conveyor.on();
         }
     }
-    
-    // -----------------------------------------------------------------------
-    
+
     public static void main(String[] args) {
         Factory factory = new Factory();
         factory.startSimulation();

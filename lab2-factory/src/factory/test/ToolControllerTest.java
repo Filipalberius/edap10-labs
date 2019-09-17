@@ -1,11 +1,10 @@
 package factory.test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
+import factory.model.WidgetKind;
 import org.junit.Test;
 
-import factory.model.WidgetKind;
+import static junit.framework.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 public class ToolControllerTest {
 
