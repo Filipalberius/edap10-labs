@@ -7,6 +7,8 @@ import factory.swingview.Factory;
 public class ToolController {
     private final DigitalSignal conveyor, press, paint;
     private final long pressingMillis, paintingMillis;
+    private boolean painting = false;
+    private boolean pressing = false;
     
     public ToolController(DigitalSignal conveyor,
                           DigitalSignal press,
@@ -21,31 +23,52 @@ public class ToolController {
         this.paintingMillis = paintingMillis;
     }
 
-    public void onPressSensorHigh(WidgetKind widgetKind) throws InterruptedException {
-        //
-        // TODO: you will need to modify this method
-        //
+    public synchronized void onPressSensorHigh(WidgetKind widgetKind) throws InterruptedException {
         if (widgetKind == WidgetKind.BLUE_RECTANGULAR_WIDGET) {
+            togglePressing();
             conveyor.off();
             press.on();
-            Thread.sleep(pressingMillis);
+            wait(pressingMillis);
+            //Thread.sleep(pressingMillis);
             press.off();
-            Thread.sleep(pressingMillis);   // press needs this time to retract
-            conveyor.on();
+            wait(pressingMillis);
+            //Thread.sleep(pressingMillis);
+            togglePressing();
+            startBelt();
+            //conveyor.on();
         }
     }
 
-    public void onPaintSensorHigh(WidgetKind widgetKind) throws InterruptedException {
-        //
-        // TODO: you will need to modify this method
-        //
+    public synchronized void onPaintSensorHigh(WidgetKind widgetKind) throws InterruptedException {
         if (widgetKind == WidgetKind.ORANGE_ROUND_WIDGET) {
-        	conveyor.off();
+            togglePainting();
+            conveyor.off();
         	paint.on();
-        	Thread.sleep(paintingMillis);
+        	wait(paintingMillis);
+            //Thread.sleep(paintingMillis);
         	paint.off();
-        	conveyor.on();
+            togglePainting();
+            startBelt();
+            //conveyor.on();
         }
+    }
+
+    private void startBelt() throws InterruptedException {
+//        while (painting || pressing) {
+//            wait();
+//        }
+
+        if (!painting && !pressing) conveyor.on();
+    }
+
+    private void togglePainting() {
+        painting = !painting;
+        //notifyAll();
+    }
+
+    private void togglePressing() {
+        pressing = !pressing;
+        //notifyAll();
     }
 
     public static void main(String[] args) {
