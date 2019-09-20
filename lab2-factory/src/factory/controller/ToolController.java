@@ -25,50 +25,43 @@ public class ToolController {
 
     public synchronized void onPressSensorHigh(WidgetKind widgetKind) throws InterruptedException {
         if (widgetKind == WidgetKind.BLUE_RECTANGULAR_WIDGET) {
-            togglePressing();
+            pressing = true;
             conveyor.off();
             press.on();
-            wait(pressingMillis);
-            //Thread.sleep(pressingMillis);
+            waitOutside(pressingMillis);
             press.off();
-            wait(pressingMillis);
-            //Thread.sleep(pressingMillis);
-            togglePressing();
+            waitOutside(pressingMillis);
+            pressing = false;
             startBelt();
-            //conveyor.on();
         }
     }
 
     public synchronized void onPaintSensorHigh(WidgetKind widgetKind) throws InterruptedException {
         if (widgetKind == WidgetKind.ORANGE_ROUND_WIDGET) {
-            togglePainting();
+            painting = true;
             conveyor.off();
         	paint.on();
-        	wait(paintingMillis);
-            //Thread.sleep(paintingMillis);
+        	waitOutside(paintingMillis);
         	paint.off();
-            togglePainting();
+            painting = false;
             startBelt();
-            //conveyor.on();
         }
     }
 
-    private void startBelt() throws InterruptedException {
-//        while (painting || pressing) {
-//            wait();
-//        }
-
-        if (!painting && !pressing) conveyor.on();
+    private void startBelt() {
+        if (!(painting || pressing)) {
+            conveyor.on();
+        }
     }
 
-    private void togglePainting() {
-        painting = !painting;
-        //notifyAll();
-    }
+    /** Helper method: sleep outside of monitor for ’millis’ milliseconds. */
+    private void waitOutside(long millis) throws InterruptedException {
+        long timeToWakeUp = System.currentTimeMillis() + millis;
 
-    private void togglePressing() {
-        pressing = !pressing;
-        //notifyAll();
+        while (System.currentTimeMillis() < timeToWakeUp) {
+            long dt = timeToWakeUp - System.currentTimeMillis();
+            wait(dt);
+        }
     }
 
     public static void main(String[] args) {
