@@ -54,7 +54,6 @@ public class ToolController {
         }
     }
 
-    /** Helper method: sleep outside of monitor for ’millis’ milliseconds. */
     private void waitOutside(long millis) throws InterruptedException {
         long timeToWakeUp = System.currentTimeMillis() + millis;
 
