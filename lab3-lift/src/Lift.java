@@ -1,6 +1,7 @@
 import lift.LiftView;
 import lift.Passenger;
 
+import java.util.Arrays;
 import java.util.Random;
 
 public class Lift {
@@ -38,6 +39,7 @@ public class Lift {
 
     private synchronized void passengerThings(Passenger passenger) throws InterruptedException {
         waitEntry[passenger.getStartFloor()] += 1;
+        notifyAll();
 
         while (!(here == passenger.getStartFloor() && load < 4 && liftHasStopped)) {
             wait();
@@ -101,7 +103,9 @@ public class Lift {
     }
 
     private boolean liftShouldStop(int here) {
-        return (waitEntry[here] > 0 && load < 4) || (waitExit[here] > 0);
+        Boolean noPassengers = Arrays.stream(waitEntry).sum() == 0 && Arrays.stream(waitExit).sum() == 0;
+
+        return (waitEntry[here] > 0 && load < 4) || waitExit[here] > 0 || noPassengers;
     }
 
     public static void main(String[] args) {
