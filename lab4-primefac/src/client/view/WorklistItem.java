@@ -5,10 +5,7 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.math.BigInteger;
 
-import javax.swing.BorderFactory;
-import javax.swing.BoxLayout;
-import javax.swing.JPanel;
-import javax.swing.JTextArea;
+import javax.swing.*;
 
 /**
  * A panel that constructs a single item in the work list. It displays
@@ -23,7 +20,7 @@ public class WorklistItem extends JPanel {
     private static final Font MESSAGE_FONT = new Font(Font.MONOSPACED, Font.PLAIN, 12);
 
     /** Create the panel, displaying the integer _n_ and the encrypted message _code_. */
-    public WorklistItem(BigInteger n, String code) {
+    public WorklistItem(BigInteger n, String code, JButton breakButton) {
         setBorder(BorderFactory.createTitledBorder("N=" + n + " (" + n.bitLength() + " bits)"));
 
         setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
@@ -37,6 +34,8 @@ public class WorklistItem extends JPanel {
         textArea.setEditable(false);
 
         add(textArea);
+
+        add(breakButton);
 
         // make sure this component shrinks and grows as needed
         setPreferredSize(new Dimension(0, HEIGHT));

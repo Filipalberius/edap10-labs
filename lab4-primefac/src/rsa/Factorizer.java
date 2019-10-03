@@ -18,7 +18,7 @@ public class Factorizer {
      * @return  the decrypted (plaintext) message
      */
     public static String crack(String code, BigInteger n, ProgressTracker tracker) {
-        List<BigInteger> primeFactors = new ArrayList<BigInteger>();
+        List<BigInteger> primeFactors = new ArrayList<>();
 
         BigInteger two = new BigInteger("2");
         BigInteger sqrt = Factorizer.sqrt(n);

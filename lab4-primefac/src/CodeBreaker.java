@@ -1,14 +1,17 @@
-
-
+import java.awt.*;
 import java.math.BigInteger;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
-import javax.swing.JPanel;
-import javax.swing.JProgressBar;
-import javax.swing.SwingUtilities;
+import javax.swing.*;
 
+import client.view.ProgressItem;
 import client.view.StatusWindow;
+import client.view.WorklistItem;
 import network.Sniffer;
 import network.SnifferCallback;
+import rsa.Factorizer;
+import rsa.ProgressTracker;
 
 public class CodeBreaker implements SnifferCallback {
 
@@ -16,6 +19,9 @@ public class CodeBreaker implements SnifferCallback {
     private final JPanel progressList;
     
     private final JProgressBar mainProgressBar;
+
+    ExecutorService threadPool = Executors.newFixedThreadPool(2);
+
 
     // -----------------------------------------------------------------------
     
@@ -25,7 +31,7 @@ public class CodeBreaker implements SnifferCallback {
         workList        = w.getWorkList();
         progressList    = w.getProgressList();
         mainProgressBar = w.getProgressBar();
-        
+
         new Sniffer(this).start();
     }
     
@@ -33,14 +39,7 @@ public class CodeBreaker implements SnifferCallback {
     
     public static void main(String[] args) throws Exception {
 
-        /*
-         * Most Swing operations (such as creating view elements) must be
-         * performed in the Swing EDT (Event Dispatch Thread).
-         * 
-         * That's what SwingUtilities.invokeLater is for.
-         */
-
-        SwingUtilities.invokeLater(() -> new CodeBreaker());
+        SwingUtilities.invokeLater(CodeBreaker::new);
     }
 
     // -----------------------------------------------------------------------
@@ -49,5 +48,30 @@ public class CodeBreaker implements SnifferCallback {
     @Override
     public void onMessageIntercepted(String message, BigInteger n) {
         System.out.println("message intercepted (N=" + n + ")...");
+        JButton breakButton = new JButton("Break");
+
+        WorklistItem workListItem = new WorklistItem(n, message, breakButton);
+        ProgressItem progressItem = new ProgressItem(n, message);
+
+        ProgressTracker tracker = new ProgressTracker() {
+            private int totalProgress = 0;
+
+            @Override
+            public void onProgress(int ppmDelta) {
+                totalProgress += ppmDelta;
+                progressItem.getProgressBar().setValue(totalProgress);
+            }
+        };
+
+        breakButton.addActionListener(e -> {
+            progressList.add(progressItem);
+            workList.remove(workListItem);
+
+            threadPool.submit(() -> {
+                Factorizer.crack(message, n, tracker);
+            });
+        });
+
+        SwingUtilities.invokeLater(() -> workList.add(workListItem));
     }
 }
