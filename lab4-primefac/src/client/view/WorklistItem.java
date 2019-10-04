@@ -18,9 +18,12 @@ public class WorklistItem extends JPanel {
     public static final int HEIGHT = 100;
     
     private static final Font MESSAGE_FONT = new Font(Font.MONOSPACED, Font.PLAIN, 12);
+    private JButton breakButton = new JButton("Break");
+
+    public JButton getBreakButton() { return breakButton; }
 
     /** Create the panel, displaying the integer _n_ and the encrypted message _code_. */
-    public WorklistItem(BigInteger n, String code, JButton breakButton) {
+    public WorklistItem(BigInteger n, String code) {
         setBorder(BorderFactory.createTitledBorder("N=" + n + " (" + n.bitLength() + " bits)"));
 
         setLayout(new BoxLayout(this, BoxLayout.X_AXIS));

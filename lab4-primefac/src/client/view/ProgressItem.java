@@ -6,11 +6,7 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.math.BigInteger;
 
-import javax.swing.BorderFactory;
-import javax.swing.BoxLayout;
-import javax.swing.JPanel;
-import javax.swing.JProgressBar;
-import javax.swing.JTextArea;
+import javax.swing.*;
 
 /**
  * A panel that constructs a single item in the progress list. It displays
@@ -22,10 +18,17 @@ public class ProgressItem extends JPanel {
 
     private final JProgressBar progressBar;
     private final JTextArea textArea;
+    private JButton removeButton = new JButton("Remove");
 
     private static final Font MESSAGE_FONT = new Font(Font.MONOSPACED, Font.PLAIN, 12);
 
     private static final Dimension MESSAGE_SIZE = new Dimension(200, 80);
+
+    public JButton getRemoveButton() {return removeButton;}
+
+    public void addRemoveButton(){
+        add(removeButton);
+    }
 
     /** Create the panel, displaying the integer _n_ and the encrypted message _code_. */
     public ProgressItem(BigInteger n, String code) {
