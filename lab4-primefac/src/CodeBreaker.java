@@ -18,10 +18,7 @@ public class CodeBreaker implements SnifferCallback {
     private final JPanel progressList;
     private final JProgressBar mainProgressBar;
 
-    private ExecutorService threadPool = Executors.newFixedThreadPool(2);
-
-
-    // -----------------------------------------------------------------------
+    private ExecutorService threadPool = Executors.newFixedThreadPool(4);
     
     private CodeBreaker() {
         StatusWindow w  = new StatusWindow();
@@ -34,58 +31,52 @@ public class CodeBreaker implements SnifferCallback {
         new Sniffer(this).start();
     }
     
-    // -----------------------------------------------------------------------
-    
-    public static void main(String[] args) throws Exception {
+    public static void main(String[] args) {
 
         SwingUtilities.invokeLater(CodeBreaker::new);
     }
 
-    // -----------------------------------------------------------------------
-
-    /** Called by a Sniffer thread when an encrypted message is obtained. */
     @Override
     public void onMessageIntercepted(String message, BigInteger n) {
         System.out.println("message intercepted (N=" + n + ")...");
 
-        WorklistItem workListItem = new WorklistItem(n, message);
-        ProgressItem progressItem = new ProgressItem(n, message);
+        SwingUtilities.invokeLater(() -> {
+            WorklistItem workListItem = new WorklistItem(n, message);
+            ProgressItem progressItem = new ProgressItem(n, message);
+            workList.add(workListItem);
 
-        SwingUtilities.invokeLater(() -> workList.add(workListItem));
 
-        ProgressTracker tracker = new ProgressTracker() {
-            private int totalProgress = 0;
+            ProgressTracker tracker = new ProgressTracker() {
+                private int totalProgress = 0;
 
-            @Override
-            public void onProgress(int ppmDelta) {
-                totalProgress += ppmDelta;
-                SwingUtilities.invokeLater(() -> {
-                    progressItem.getProgressBar().setValue(totalProgress);
-                    mainProgressBar.setValue(mainProgressBar.getValue() + ppmDelta);
-                });
-            }
-        };
+                @Override
+                public void onProgress(int ppmDelta) {
+                    totalProgress += ppmDelta;
 
-        workListItem.getBreakButton().addActionListener(e -> {
-            SwingUtilities.invokeLater(() ->{
+                    SwingUtilities.invokeLater(() -> {
+                        progressItem.getProgressBar().setValue(totalProgress);
+                        mainProgressBar.setValue(mainProgressBar.getValue() + ppmDelta);
+                    });
+                }
+            };
+
+            workListItem.getBreakButton().addActionListener(e -> {
                 progressList.add(progressItem);
                 workList.remove(workListItem);
                 mainProgressBar.setMaximum(mainProgressBar.getMaximum() + 1000000);
+
+                Runnable crack = () -> {
+                    String plainText = Factorizer.crack(message, n, tracker);
+                    SwingUtilities.invokeLater(() -> {
+                        progressItem.getTextArea().setText(plainText);
+                        progressItem.addRemoveButton();
+                    });
+                };
+
+                threadPool.submit(crack);
             });
 
-            Runnable crack = () -> {
-                String plainText = Factorizer.crack(message, n, tracker);
-                SwingUtilities.invokeLater(() -> {
-                    progressItem.getTextArea().setText(plainText);
-                    progressItem.addRemoveButton();
-                });
-            };
-
-            threadPool.submit(crack);
-        });
-
-        progressItem.getRemoveButton().addActionListener(e -> {
-            SwingUtilities.invokeLater(() -> {
+            progressItem.getRemoveButton().addActionListener(e -> {
                 progressList.remove(progressItem);
                 mainProgressBar.setValue(mainProgressBar.getValue() - 1000000);
                 mainProgressBar.setMaximum(mainProgressBar.getMaximum() - 1000000);
