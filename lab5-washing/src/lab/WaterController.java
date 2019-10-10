@@ -1,5 +1,4 @@
 package lab;
-
 import wash.WashingIO;
 
 public class WaterController extends MessagingThread<WashingMessage> {
@@ -16,6 +15,7 @@ public class WaterController extends MessagingThread<WashingMessage> {
             int command = 0;
             double value = 0;
             MessagingThread<WashingMessage> sender = null;
+            double prevValue = 0;
 
             while (true) {
                 WashingMessage m = receiveWithTimeout(1000 / Wash.SPEEDUP);
@@ -40,18 +40,24 @@ public class WaterController extends MessagingThread<WashingMessage> {
                         }
                         else {
                             io.fill(false);
-                            sender.send(new WashingMessage(this, WashingMessage.ACKNOWLEDGMENT));
+                            if (io.getWaterLevel() != prevValue) {
+                                sender.send(new WashingMessage(this, WashingMessage.ACKNOWLEDGMENT));
+                            }
                         }
                         break;
                     case 8:
                         //DRAIN
                         if (io.getWaterLevel() > 0)
                             io.drain(true);
-                        else
+                        else {
                             io.drain(false);
+                            if (io.getWaterLevel() != prevValue) {
+                                sender.send(new WashingMessage(this, WashingMessage.ACKNOWLEDGMENT));
+                            }
+                        }
                         break;
                 }
-
+                prevValue = io.getWaterLevel();
             }
 
         } catch (InterruptedException unexpected) {

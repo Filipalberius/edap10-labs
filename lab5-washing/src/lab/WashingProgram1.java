@@ -2,17 +2,6 @@ package lab;
 
 import wash.WashingIO;
 
-/**
- * Program 3 for washing machine.
- * Serves as an example of how washing programs are structured.
- * 
- * This short program stops all regulation of temperature and water
- * levels, stops the barrel from spinning, and drains the machine
- * of water.
- * 
- * It is can be used after an emergency stop (program 0) or a
- * power failure.
- */
 class WashingProgram1 extends MessagingThread<WashingMessage> {
 
     private WashingIO io;
@@ -20,7 +9,7 @@ class WashingProgram1 extends MessagingThread<WashingMessage> {
     private MessagingThread<WashingMessage> water;
     private MessagingThread<WashingMessage> spin;
 
-    public WashingProgram1(WashingIO io,
+    WashingProgram1(WashingIO io,
                            MessagingThread<WashingMessage> temp,
                            MessagingThread<WashingMessage> water,
                            MessagingThread<WashingMessage> spin) {
@@ -33,29 +22,59 @@ class WashingProgram1 extends MessagingThread<WashingMessage> {
     @Override
     public void run() {
         try {
+            WashingMessage ack;
+
             io.lock(true);
 
             water.send(new WashingMessage(this, WashingMessage.WATER_FILL, 10));
-
-            WashingMessage ack = receive();  // wait for acknowledgment
+            ack = receive();
             System.out.println("got " + ack);
 
-            /* // instruct SpinController to rotate barrel slowly, back and forth
+            temp.send(new WashingMessage(this, WashingMessage.TEMP_SET, 40));
+            ack = receive();
+            System.out.println("got " + ack);
+
             spin.send(new WashingMessage(this, WashingMessage.SPIN_SLOW));
-            // spin for 5 simulated minutes (one minute == 60000 milliseconds)
-            Thread.sleep(5 * 60000 / Wash.SPEEDUP);
-            // instruct SpinController to stop spin barrel spin
-            spin.send(new WashingMessage(this, WashingMessage.SPIN_OFF)); */
+
+            Thread.sleep(1800000 / Wash.SPEEDUP);
+
+            spin.send(new WashingMessage(this, WashingMessage.SPIN_OFF));
+            temp.send(new WashingMessage(this, WashingMessage.TEMP_IDLE));
+
+            water.send(new WashingMessage(this, WashingMessage.WATER_DRAIN));
+            ack = receive();
+            System.out.println("got " + ack);
+
+            for (int i = 0; i < 5; i++) {
+                water.send(new WashingMessage(this, WashingMessage.WATER_FILL, 10));
+                ack = receive();
+                System.out.println("got " + ack);
+
+                spin.send(new WashingMessage(this, WashingMessage.SPIN_SLOW));
+
+                Thread.sleep(120000 / Wash.SPEEDUP);
+
+                spin.send(new WashingMessage(this, WashingMessage.SPIN_OFF));
+
+                water.send(new WashingMessage(this, WashingMessage.WATER_DRAIN));
+                ack = receive();
+                System.out.println("got " + ack);
+
+            }
+
+            spin.send(new WashingMessage(this, WashingMessage.SPIN_FAST));
+
+            Thread.sleep(300000 / Wash.SPEEDUP);
+
+            spin.send(new WashingMessage(this, WashingMessage.SPIN_OFF));
+
+            io.lock(false);
+
 
         } catch (InterruptedException e) {
-            
-            // if we end up here, it means the program was interrupt()'ed
-            // set all controllers to idle
-
             temp.send(new WashingMessage(this, WashingMessage.TEMP_IDLE));
             water.send(new WashingMessage(this, WashingMessage.WATER_IDLE));
             spin.send(new WashingMessage(this, WashingMessage.SPIN_OFF));
-            System.out.println("washing program terminated");
         }
     }
 }

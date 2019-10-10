@@ -6,7 +6,7 @@ public class Wash {
 
     // simulation speed-up factor:
     // 50 means the simulation is 50 times faster than real time
-    static final int SPEEDUP = 50;
+    static final int SPEEDUP = 500;
 
     public static void main(String[] args) throws InterruptedException {
         WashingSimulator sim = new WashingSimulator(SPEEDUP);
@@ -25,7 +25,7 @@ public class Wash {
         MessagingThread<WashingMessage> prog2 = new WashingProgram2(io, temp, water, spin);
         MessagingThread<WashingMessage> prog3 = new WashingProgram3(io, temp, water, spin);
 
-        int currentProgramme = 0;
+        int currentProgram = 0;
 
         while (true) {
             int userInput = io.awaitButton();
@@ -34,7 +34,7 @@ public class Wash {
 
             switch (userInput) {
                 case 0:
-                    switch (currentProgramme) {
+                    switch (currentProgram) {
                         case 1:
                             prog1.interrupt();
                             prog1 = new WashingProgram1(io, temp, water, spin);
@@ -52,17 +52,17 @@ public class Wash {
 
                 case 1:
                     prog1.start();
-                    currentProgramme = 1;
+                    currentProgram = 1;
                     break;
 
                 case 2:
                     prog2.start();
-                    currentProgramme = 2;
+                    currentProgram = 2;
                     break;
 
                 case 3:
                     prog3.start();
-                    currentProgramme = 3;
+                    currentProgram = 3;
                     break;
             }
         }

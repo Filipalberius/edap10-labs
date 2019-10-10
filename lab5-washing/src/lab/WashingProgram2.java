@@ -9,7 +9,7 @@ class WashingProgram2 extends MessagingThread<WashingMessage> {
     private MessagingThread<WashingMessage> water;
     private MessagingThread<WashingMessage> spin;
 
-    public WashingProgram2(WashingIO io,
+    WashingProgram2(WashingIO io,
                            MessagingThread<WashingMessage> temp,
                            MessagingThread<WashingMessage> water,
                            MessagingThread<WashingMessage> spin) {
@@ -22,31 +22,77 @@ class WashingProgram2 extends MessagingThread<WashingMessage> {
     @Override
     public void run() {
         try {
+            WashingMessage ack;
 
-            // Switch off heating
+            io.lock(true);
+
+            water.send(new WashingMessage(this, WashingMessage.WATER_FILL, 10));
+            ack = receive();
+            System.out.println("got " + ack);
+
+            temp.send(new WashingMessage(this, WashingMessage.TEMP_SET, 40));
+            ack = receive();
+            System.out.println("got " + ack);
+
+            spin.send(new WashingMessage(this, WashingMessage.SPIN_SLOW));
+
+            Thread.sleep(900000 / Wash.SPEEDUP);
+
+            spin.send(new WashingMessage(this, WashingMessage.SPIN_OFF));
             temp.send(new WashingMessage(this, WashingMessage.TEMP_IDLE));
 
-            // Switch off spin
+            water.send(new WashingMessage(this, WashingMessage.WATER_DRAIN));
+            ack = receive();
+            System.out.println("got " + ack);
+
+            water.send(new WashingMessage(this, WashingMessage.WATER_FILL, 10));
+            ack = receive();
+            System.out.println("got " + ack);
+
+            temp.send(new WashingMessage(this, WashingMessage.TEMP_SET, 60));
+            ack = receive();
+            System.out.println("got " + ack);
+
+            spin.send(new WashingMessage(this, WashingMessage.SPIN_SLOW));
+
+            Thread.sleep(1800000 / Wash.SPEEDUP);
+
+            spin.send(new WashingMessage(this, WashingMessage.SPIN_OFF));
+            temp.send(new WashingMessage(this, WashingMessage.TEMP_IDLE));
+
+            water.send(new WashingMessage(this, WashingMessage.WATER_DRAIN));
+            ack = receive();
+            System.out.println("got " + ack);
+
+            for (int i = 0; i < 5; i++) {
+                water.send(new WashingMessage(this, WashingMessage.WATER_FILL, 10));
+                ack = receive();
+                System.out.println("got " + ack);
+
+                spin.send(new WashingMessage(this, WashingMessage.SPIN_SLOW));
+
+                Thread.sleep(120000 / Wash.SPEEDUP);
+
+                spin.send(new WashingMessage(this, WashingMessage.SPIN_OFF));
+
+                water.send(new WashingMessage(this, WashingMessage.WATER_DRAIN));
+                ack = receive();
+                System.out.println("got " + ack);
+
+            }
+
+            spin.send(new WashingMessage(this, WashingMessage.SPIN_FAST));
+
+            Thread.sleep(300000 / Wash.SPEEDUP);
+
             spin.send(new WashingMessage(this, WashingMessage.SPIN_OFF));
 
-            // Drain barrel (may take some time)
-            water.send(new WashingMessage(this, WashingMessage.WATER_DRAIN));
-            WashingMessage ack = receive();  // wait for acknowledgment
-            System.out.println("got " + ack);
-            water.send(new WashingMessage(this, WashingMessage.WATER_IDLE));
-
-            // Unlock hatch
             io.lock(false);
             
         } catch (InterruptedException e) {
-            
-            // if we end up here, it means the program was interrupt()'ed
-            // set all controllers to idle
-
             temp.send(new WashingMessage(this, WashingMessage.TEMP_IDLE));
             water.send(new WashingMessage(this, WashingMessage.WATER_IDLE));
             spin.send(new WashingMessage(this, WashingMessage.SPIN_OFF));
-            System.out.println("washing program terminated");
         }
     }
 }

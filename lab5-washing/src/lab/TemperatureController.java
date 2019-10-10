@@ -11,39 +11,62 @@ public class TemperatureController extends MessagingThread<WashingMessage> {
 
     @Override
     public void run() {
-        try {
-            int command = 0;
-            double value = 0;
 
+        double targetTemp = 0;
+        int state = 0;
+        boolean changeTemp = false;
+        MessagingThread<WashingMessage> sender = null;
+
+        try {
             while (true) {
                 // wait for up to a (simulated) minute for a WashingMessage
                 WashingMessage m = receiveWithTimeout(10000 / Wash.SPEEDUP);
 
                 if (m != null) {
                     System.out.println("got " + m);
-                    command = m.getCommand();
-                    value = m.getValue();
+                    state = m.getCommand();
+                    if(state == 5) {
+                        targetTemp = m.getValue();
+                        changeTemp = true;
+                    } else if (state == 4) {
+                        io.heat(false);
+                    }
+                    sender = m.getSender();
                 }
 
-                switch (command) {
-                    case 4:
-                        io.heat(false);
-                        break;
-                    case 5:
-                        if (io.getTemperature() > value - 0.478) {
-                            io.heat(false);
-                        } else {
-                            io.heat(true);
-                        }
-
-                        //Do we really need this?
-                        if (io.getTemperature() < value - 2 + 0.00952) {
-                            io.heat(true);
-                        }
+                if (state == 5) {
+                    if (changeTemp) {
+                        changeTemp = reachNewTemp(targetTemp, sender);
+                    } else {
+                        holdTemp(targetTemp);
+                    }
                 }
             }
+
         } catch (InterruptedException unexpected) {
             throw new Error(unexpected);
         }
+    }
+
+    private void holdTemp(double targetTemp) {
+        if (io.getTemperature() > targetTemp - 1.478) {
+            io.heat(false);
+        } else {
+            io.heat(true);
+        }
+    }
+
+    private boolean reachNewTemp(double targetTemp, MessagingThread<WashingMessage> sender) {
+        if (io.getTemperature() > targetTemp) {
+            io.heat(false);
+        } else {
+            io.heat(true);
+        }
+
+        if (io.getTemperature() >= targetTemp - 2 && io.getTemperature() < targetTemp) {
+            sender.send(new WashingMessage(this, WashingMessage.ACKNOWLEDGMENT));
+            return false;
+        }
+        return true;
     }
 }
