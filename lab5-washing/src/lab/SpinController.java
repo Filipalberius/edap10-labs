@@ -4,17 +4,17 @@ import wash.WashingIO;
 
 public class SpinController extends MessagingThread<WashingMessage> {
 
-    // TODO: add attributes
+    private WashingIO io;
 
-    public SpinController(WashingIO io) {
-        // TODO
+    SpinController(WashingIO io) {
+        this.io = io;
     }
 
     @Override
     public void run() {
         try {
-
-            // ... TODO ...
+            boolean spinLeft = true;
+            int command = 0;
 
             while (true) {
                 // wait for up to a (simulated) minute for a WashingMessage
@@ -23,13 +23,28 @@ public class SpinController extends MessagingThread<WashingMessage> {
                 // if m is null, it means a minute passed and no message was received
                 if (m != null) {
                     System.out.println("got " + m);
+                    command = m.getCommand();
                 }
-                
-                // ... TODO ...
+
+                switch (command) {
+                    case 2:
+                        spinLeft = !spinLeft;
+                        if (spinLeft) {
+                            io.setSpinMode(2);
+                        } else {
+                            io.setSpinMode(3);
+                        }
+                        break;
+                    case 3:
+                        io.setSpinMode(4);
+                        break;
+                    case 1:
+                        io.setSpinMode(1);
+                        break;
+                }
+
             }
         } catch (InterruptedException unexpected) {
-            // we don't expect this thread to be interrupted,
-            // so throw an error if it happens anyway
             throw new Error(unexpected);
         }
     }
