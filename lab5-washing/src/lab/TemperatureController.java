@@ -49,7 +49,7 @@ public class TemperatureController extends MessagingThread<WashingMessage> {
     }
 
     private void holdTemp(double targetTemp) {
-        if (io.getTemperature() > targetTemp - 1.478) {
+        if (io.getTemperature() > targetTemp - 0.478) {
             io.heat(false);
         } else {
             io.heat(true);
